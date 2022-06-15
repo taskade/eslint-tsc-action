@@ -1,0 +1,13 @@
+name: 'Taskade ESLint TSC Action'
+description: 'Provide ESLint and TSC check annotations on PRs'
+inputs:
+  check_name:
+    description: Name for the check run
+    required: false
+  github_token:
+    description: 'GitHub token'
+    required: true
+    default: ${{ github.token }}
+runs:
+  using: 'node12'
+  main: 'lib/index.js'
