@@ -53,6 +53,8 @@ async function run() {
     checkId = createdCheck.data.id;
   }
 
+  console.log(`Processing ${annotations.length} annotations for SHA ${sha}`);
+
   const conclusion = 'success';
 
   for (const annotationsChunk of chunk(annotations, 50)) {
