@@ -10,6 +10,7 @@ const ESLINT_GITHUB_LEVELS: Annotation['annotation_level'][] = [
 
 export default async function eslint(): Promise<Annotation[]> {
   console.log('Running ESLint...');
+  console.log(process.cwd());
   const modulePath = path.join(process.cwd(), 'node_modules/eslint');
   const { ESLint } = (await import(modulePath)) as typeof import('eslint');
 
