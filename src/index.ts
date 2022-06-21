@@ -21,8 +21,18 @@ async function run() {
   annotations.push(...(await eslint()));
   annotations.push(...(await tsc()));
 
-  const { sha } = github.context;
+  const { issue } = github.context;
   const { owner, repo } = github.context.repo;
+
+  const pullRequestNumber = issue.number;
+
+  const pullRequest = await octokit.rest.pulls.get({
+    owner,
+    repo,
+    pull_number: pullRequestNumber,
+  });
+
+  const sha = pullRequest.data.head.sha;
 
   const checkName = core.getInput('check_name');
   let checkId: number | null = null;
