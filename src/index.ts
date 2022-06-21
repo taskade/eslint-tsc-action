@@ -58,6 +58,8 @@ async function run() {
     pullRequestChangedFilesPage++;
   } while (pullRequestChangedFiles.data.length > 0);
 
+  console.log(`Linting ${filesToLint.size} files`, [...filesToLint]);
+
   // Run ESLint and TSC
 
   const annotations: Annotation[] = [];
