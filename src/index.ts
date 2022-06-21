@@ -10,6 +10,10 @@ async function run() {
   console.log('Processing event', github.context.eventName);
   console.log('Processing action', github.context.payload.action);
 
+  if (github.context.eventName !== 'pull_request') {
+    throw new Error('this action only supports the `pull_request` event.');
+  }
+
   const token = core.getInput('github_token');
   const octokit = github.getOctokit(token);
   const annotations: Annotation[] = [];
