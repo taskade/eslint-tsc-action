@@ -44,6 +44,10 @@ async function run() {
     const createdCheck = await octokit.rest.checks.create({
       owner,
       repo,
+      name: checkName || 'ESLint TSC Action',
+      head_sha: sha,
+      status: 'in_progress',
+      started_at: new Date().toISOString(),
     });
 
     checkId = createdCheck.data.id;
