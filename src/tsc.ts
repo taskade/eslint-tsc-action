@@ -47,7 +47,7 @@ export default async function tsc(
     const annotation_level: Annotation['annotation_level'] = 'failure';
 
     const message = diagnostic.messageText as string;
-    const title = `TS${diagnostic.code}`;
+    const title = `TypeScript Compiler: Code ${diagnostic.code}`;
 
     const annotation: Annotation = {
       path: filePath,

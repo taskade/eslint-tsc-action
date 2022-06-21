@@ -32,7 +32,7 @@ export default async function eslint(
       const start_line = line || 0;
       const end_line = endLine || line || 0;
       const annotation_level = ESLINT_GITHUB_LEVELS[severity];
-      const title = ruleId ?? 'ESLint';
+      const title = ruleId ? `ESLint: ${ruleId}` : 'ESLint';
 
       const annotation: Annotation = {
         path: filePathRelative,
