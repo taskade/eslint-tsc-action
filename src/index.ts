@@ -58,6 +58,8 @@ async function run() {
     pullRequestChangedFilesPage++;
   } while (pullRequestChangedFiles.data.length > 0);
 
+  // Run ESLint and TSC
+
   const annotations: Annotation[] = [];
 
   annotations.push(...(await eslint(filesToLint)));
