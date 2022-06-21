@@ -63,6 +63,8 @@ async function run() {
       completed_at: new Date().toISOString(),
       conclusion,
       output: {
+        title: `Found ${annotations.length} annotations`,
+        summary: `Found ${annotations.length} annotations`,
         annotations: annotationsChunk,
       },
     });
