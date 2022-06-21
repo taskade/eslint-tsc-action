@@ -3,7 +3,9 @@ import * as typescript from 'typescript';
 
 import { Annotation } from './types';
 
-export default async function tsc(): Promise<Annotation[]> {
+export default async function tsc(
+  filesToLint: Set<string>
+): Promise<Annotation[]> {
   console.log('Running TSC...');
 
   const modulePath = path.join(process.cwd(), 'node_modules/typescript');
@@ -15,7 +17,7 @@ export default async function tsc(): Promise<Annotation[]> {
     throw new Error('config file not found!');
   }
 
-  const program = ts.createProgram(['**/**.ts'], {
+  const program = ts.createProgram([...filesToLint], {
     options: {},
     rootNames: [],
   });
@@ -29,7 +31,7 @@ export default async function tsc(): Promise<Annotation[]> {
       continue;
     }
 
-    const filePath = path.join(process.cwd(), diagnostic.file.fileName);
+    const filePath = path.relative(process.cwd(), diagnostic.file.fileName);
     const lineAndChar = diagnostic.file.getLineAndCharacterOfPosition(
       diagnostic.start
     );

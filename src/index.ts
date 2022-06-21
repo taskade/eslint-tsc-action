@@ -14,15 +14,13 @@ async function run() {
     throw new Error('this action only supports the `pull_request` event.');
   }
 
-  const token = core.getInput('github_token');
-  const octokit = github.getOctokit(token);
-  const annotations: Annotation[] = [];
-
-  annotations.push(...(await eslint()));
-  annotations.push(...(await tsc()));
-
   const { issue } = github.context;
   const { owner, repo } = github.context.repo;
+
+  const token = core.getInput('github_token');
+  const octokit = github.getOctokit(token);
+
+  // Fetch pull request information
 
   const pullRequestNumber = issue.number;
 
@@ -33,6 +31,37 @@ async function run() {
   });
 
   const sha = pullRequest.data.head.sha;
+
+  // Fetch list of changed files
+
+  const filesToLint = new Set<string>();
+
+  let pullRequestChangedFiles: Awaited<
+    ReturnType<typeof octokit.rest.pulls.listFiles>
+  >;
+
+  let pullRequestChangedFilesPage = 1;
+
+  do {
+    pullRequestChangedFiles = await octokit.rest.pulls.listFiles({
+      owner,
+      repo,
+      pull_number: pullRequestNumber,
+      per_page: 100,
+      page: pullRequestChangedFilesPage,
+    });
+
+    for (const file of pullRequestChangedFiles.data) {
+      filesToLint.add(file.filename);
+    }
+
+    pullRequestChangedFilesPage++;
+  } while (pullRequestChangedFiles.data.length > 0);
+
+  const annotations: Annotation[] = [];
+
+  annotations.push(...(await eslint(filesToLint)));
+  annotations.push(...(await tsc(filesToLint)));
 
   const checkName = core.getInput('check_name');
   let checkId: number | null = null;

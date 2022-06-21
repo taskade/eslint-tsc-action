@@ -8,14 +8,16 @@ const ESLINT_GITHUB_LEVELS: Annotation['annotation_level'][] = [
   'failure',
 ];
 
-export default async function eslint(): Promise<Annotation[]> {
+export default async function eslint(
+  filesToLint: Set<string>
+): Promise<Annotation[]> {
   console.log('Running ESLint...');
   console.log(process.cwd());
   const modulePath = path.join(process.cwd(), 'node_modules/eslint');
   const { ESLint } = (await import(modulePath)) as typeof import('eslint');
 
   const eslint = new ESLint();
-  const results = await eslint.lintFiles('.');
+  const results = await eslint.lintFiles([...filesToLint]);
 
   const annotations: Annotation[] = [];
 
@@ -26,14 +28,14 @@ export default async function eslint(): Promise<Annotation[]> {
       const { line, endLine, severity, ruleId, message, column, endColumn } =
         msg;
 
-      const path = filePath;
+      const filePathRelative = path.relative(process.cwd(), filePath);
       const start_line = line || 0;
       const end_line = endLine || line || 0;
       const annotation_level = ESLINT_GITHUB_LEVELS[severity];
       const title = ruleId ?? 'ESLint';
 
       const annotation: Annotation = {
-        path,
+        path: filePathRelative,
         start_line,
         end_line,
         annotation_level,
