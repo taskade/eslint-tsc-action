@@ -25,9 +25,13 @@ export default async function tsc(
     process.cwd()
   );
 
+  const rootNames = [...filesToLint].map((file) => {
+    return path.join(process.cwd(), file);
+  });
+
   const program = ts.createProgram({
     options: compilerOptions.options,
-    rootNames: [...filesToLint],
+    rootNames,
     configFileParsingDiagnostics: compilerOptions.errors,
   });
 
