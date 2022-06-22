@@ -17,9 +17,18 @@ export default async function tsc(
     throw new Error('config file not found!');
   }
 
-  const program = ts.createProgram([...filesToLint], {
-    options: {},
-    rootNames: [],
+  const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
+
+  const compilerOptions = ts.parseJsonConfigFileContent(
+    configFile.config,
+    ts.sys,
+    process.cwd()
+  );
+
+  const program = ts.createProgram({
+    options: compilerOptions.options,
+    rootNames: [...filesToLint],
+    configFileParsingDiagnostics: compilerOptions.errors,
   });
 
   const allDiagnostics = ts.getPreEmitDiagnostics(program);
