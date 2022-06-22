@@ -46,7 +46,14 @@ export default async function tsc(
 
     const annotation_level: Annotation['annotation_level'] = 'failure';
 
-    const message = diagnostic.messageText as string;
+    let message = '';
+
+    if (typeof diagnostic.messageText === 'string') {
+      message = diagnostic.messageText;
+    } else {
+      message = JSON.stringify(diagnostic.messageText, null, 2);
+    }
+
     const title = `TypeScript Compiler: Code ${diagnostic.code}`;
 
     const annotation: Annotation = {
