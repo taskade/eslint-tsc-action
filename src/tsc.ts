@@ -33,6 +33,16 @@ export default async function tsc(
 
   const allDiagnostics = ts.getPreEmitDiagnostics(program);
 
+  const formatHost: typescript.FormatDiagnosticsHost = {
+    getCanonicalFileName(fileName: string) {
+      return fileName;
+    },
+    getCurrentDirectory: ts.sys.getCurrentDirectory,
+    getNewLine() {
+      return ts.sys.newLine;
+    },
+  };
+
   const annotations: Annotation[] = [];
 
   for (const diagnostic of allDiagnostics) {
@@ -55,13 +65,7 @@ export default async function tsc(
 
     const annotation_level: Annotation['annotation_level'] = 'failure';
 
-    let message = '';
-
-    if (typeof diagnostic.messageText === 'string') {
-      message = diagnostic.messageText;
-    } else {
-      message = JSON.stringify(diagnostic.messageText, null, 2);
-    }
+    const message = ts.formatDiagnostic(diagnostic, formatHost);
 
     const title = `TypeScript Compiler: Code ${diagnostic.code}`;
 
