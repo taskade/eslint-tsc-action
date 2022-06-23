@@ -55,12 +55,6 @@ export default async function tsc(
     }
 
     const filePath = path.relative(process.cwd(), diagnostic.file.fileName);
-
-    if (filePath.startsWith('node_modules')) {
-      // Ignore annotations for node_modules
-      continue;
-    }
-
     const lineAndChar = diagnostic.file.getLineAndCharacterOfPosition(
       diagnostic.start
     );
