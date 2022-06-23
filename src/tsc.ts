@@ -75,7 +75,13 @@ export default async function tsc(
 
     const annotation_level: Annotation['annotation_level'] = 'failure';
 
-    const message = ts.formatDiagnostic(diagnostic, formatHost);
+    const message = ts
+      .formatDiagnostic(diagnostic, formatHost)
+      /**
+       * HACK: This removes most of the repeated file path in the formatted diagnostic message,
+       * which is unnecessary as the annotation is already displayed over its corresponding file.
+       */
+      .replace(filePath, '');
 
     const title = `TypeScript Compiler: Code ${diagnostic.code}`;
 
