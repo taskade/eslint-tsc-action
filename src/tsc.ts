@@ -55,6 +55,12 @@ export default async function tsc(
     }
 
     const filePath = path.relative(process.cwd(), diagnostic.file.fileName);
+
+    if (!filesToLint.has(filePath)) {
+      // Ignore files  that don't need annotations
+      continue;
+    }
+
     const lineAndChar = diagnostic.file.getLineAndCharacterOfPosition(
       diagnostic.start
     );
