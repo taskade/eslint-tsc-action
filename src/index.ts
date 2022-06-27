@@ -67,7 +67,7 @@ async function run() {
   annotations.push(...(await eslint(filesToLint)));
   annotations.push(...(await tsc(filesToLint)));
 
-  const checkName = core.getInput('check_name');
+  const checkName = core.getInput('check_name') || 'ESLint TSC Action';
   let checkId: number | null = null;
 
   if (checkName.length > 0) {
@@ -75,15 +75,12 @@ async function run() {
       owner,
       repo,
       status: 'in_progress',
+      check_name: checkName,
       ref: sha,
     });
 
-    for (const check of checks.data.check_runs) {
-      if (check.name !== checkName) {
-        continue;
-      }
-
-      checkId = check.id;
+    if (checks.data.check_runs.length > 0) {
+      checkId = checks.data.check_runs[0].id;
     }
   }
 
@@ -91,26 +88,32 @@ async function run() {
     const createdCheck = await octokit.rest.checks.create({
       owner,
       repo,
-      name: checkName || 'ESLint TSC Action',
+      name: checkName,
       head_sha: sha,
       status: 'in_progress',
       started_at: new Date().toISOString(),
     });
 
     checkId = createdCheck.data.id;
+  } else {
+    // Mark existing check run as in progress
+    await octokit.rest.checks.update({
+      owner,
+      repo,
+      check_run_id: checkId,
+      status: 'in_progress',
+      started_at: new Date().toISOString(),
+    });
   }
 
   console.log(`Processing ${annotations.length} annotations for SHA ${sha}`);
-
-  const conclusion = 'success';
 
   for (const annotationsChunk of chunk(annotations, 50)) {
     await octokit.rest.checks.update({
       owner,
       repo,
       check_run_id: checkId,
-      completed_at: new Date().toISOString(),
-      conclusion,
+      status: 'in_progress',
       output: {
         title: `Found ${annotations.length} annotations`,
         summary: `Found ${annotations.length} annotations`,
@@ -118,6 +121,16 @@ async function run() {
       },
     });
   }
+
+  // Mark check run as completed
+  await octokit.rest.checks.update({
+    owner,
+    repo,
+    check_run_id: checkId,
+    completed_at: new Date().toISOString(),
+    conclusion: 'success',
+    status: 'completed',
+  });
 }
 
 run().catch((error) => {
