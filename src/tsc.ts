@@ -50,6 +50,7 @@ export default async function tsc(
   const annotations: Annotation[] = [];
 
   for (const diagnostic of allDiagnostics) {
+    console.log('Diagnostic: ', diagnostic);
     if (diagnostic.file == null || diagnostic.start == null) {
       continue;
     }

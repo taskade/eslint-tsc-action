@@ -65,7 +65,9 @@ async function run() {
   const annotations: Annotation[] = [];
 
   annotations.push(...(await eslint(filesToLint)));
+  console.log('Completed ESLint');
   annotations.push(...(await tsc(filesToLint)));
+  console.log('Completed TSC');
 
   const checkName = core.getInput('check_name') || 'ESLint TSC Action';
   let checkId: number | null = null;
