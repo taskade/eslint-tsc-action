@@ -31,6 +31,7 @@ export default async function tsc(
   const annotations: Annotation[] = [];
 
   for (const fileName of rootNames) {
+    console.log('Current file: ', fileName);
     const program = ts.createProgram({
       options: compilerOptions.options,
       rootNames: [fileName],
@@ -49,6 +50,7 @@ export default async function tsc(
     };
 
     for (const diagnostic of allDiagnostics) {
+      console.log('Logging diagnostic: ', diagnostic);
       if (diagnostic.file == null || diagnostic.start == null) {
         continue;
       }
