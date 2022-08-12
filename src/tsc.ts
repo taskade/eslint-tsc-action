@@ -25,6 +25,8 @@ export default async function tsc(
     process.cwd()
   );
 
+  const compilerHost = ts.createCompilerHost(compilerOptions.options);
+
   const rootNames = [...filesToLint].map((file) => {
     return path.join(process.cwd(), file);
   });
@@ -36,7 +38,20 @@ export default async function tsc(
       rootNames: [fileName],
       configFileParsingDiagnostics: compilerOptions.errors,
     });
-    const allDiagnostics = ts.getPreEmitDiagnostics(program);
+
+    const sourceFile = compilerHost.getSourceFile(
+      fileName,
+      compilerOptions.options.target ?? ts.ScriptTarget.Latest
+    );
+
+    let allDiagnostics;
+
+    try {
+      allDiagnostics = ts.getPreEmitDiagnostics(program, sourceFile);
+    } catch (e) {
+      console.error(e);
+      continue;
+    }
 
     const formatHost: typescript.FormatDiagnosticsHost = {
       getCanonicalFileName(fileName: string) {
