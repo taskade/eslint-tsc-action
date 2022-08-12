@@ -52,6 +52,10 @@ async function run() {
     });
 
     for (const file of pullRequestChangedFiles.data) {
+      if (file.status === 'removed' || file.status === 'unchanged') {
+        continue;
+      }
+
       filesToLint.add(file.filename);
     }
 
