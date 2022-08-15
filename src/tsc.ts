@@ -32,13 +32,16 @@ export default async function tsc(
   });
   const annotations: Annotation[] = [];
 
-  for (const fileName of rootNames) {
-    const program = ts.createProgram({
-      options: compilerOptions.options,
-      rootNames: [fileName],
-      configFileParsingDiagnostics: compilerOptions.errors,
-    });
+  console.log('[TSC] createProgram');
+  console.log('[NODE.JS] Memory usage', process.memoryUsage());
 
+  const program = ts.createProgram({
+    options: compilerOptions.options,
+    rootNames: compilerOptions.fileNames,
+    configFileParsingDiagnostics: compilerOptions.errors,
+  });
+
+  for (const fileName of rootNames) {
     const sourceFile = compilerHost.getSourceFile(
       fileName,
       compilerOptions.options.target ?? ts.ScriptTarget.Latest
@@ -46,12 +49,18 @@ export default async function tsc(
 
     let allDiagnostics;
 
+    console.log(`[TSC] getPreEmitDiagnostics fileName=${fileName}`);
+    console.log('[NODE.JS] Memory usage', process.memoryUsage());
+
     try {
       allDiagnostics = ts.getPreEmitDiagnostics(program, sourceFile);
     } catch (e) {
       console.error(e);
       continue;
     }
+
+    console.log(`[TSC] Retrieved diagnostics length=${allDiagnostics.length}`);
+    console.log('[NODE.JS] Memory usage', process.memoryUsage());
 
     const formatHost: typescript.FormatDiagnosticsHost = {
       getCanonicalFileName(fileName: string) {
