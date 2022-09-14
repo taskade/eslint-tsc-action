@@ -1,3 +1,5 @@
+import path from 'path';
+
 import eslint from './eslint';
 import tsc from './tsc';
 import { Annotation } from './types';
@@ -12,7 +14,21 @@ import { Annotation } from './types';
  * e.g. `ts-node /somewhere/dev.ts src/browser/main.ts`
  */
 async function run() {
-  const filesToLint = new Set([...process.argv.slice(2)]);
+  const extensions = new Set(['.js', '.jsx', '.ts', '.tsx']);
+
+  const filesInput = [...process.argv.slice(2)];
+
+  const filesToLint = new Set<string>();
+
+  for (const file of filesInput) {
+    const fileExtension = path.extname(file);
+
+    if (!extensions.has(fileExtension)) {
+      continue;
+    }
+
+    filesToLint.add(file);
+  }
 
   console.log(`Linting ${filesToLint.size} files`, [...filesToLint]);
 

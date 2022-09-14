@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import chunk from 'lodash/chunk';
+import path from 'path';
 
 import eslint from './eslint';
 import tsc from './tsc';
@@ -16,6 +17,11 @@ async function run() {
 
   const { issue } = github.context;
   const { owner, repo } = github.context.repo;
+
+  const extensionsInput = core.getInput('extensions') || null;
+  const extensions = new Set(
+    extensionsInput?.split(',') ?? ['.js', '.jsx', '.ts', '.tsx']
+  );
 
   const token = core.getInput('github_token');
   const octokit = github.getOctokit(token);
@@ -53,6 +59,11 @@ async function run() {
 
     for (const file of pullRequestChangedFiles.data) {
       if (file.status === 'removed' || file.status === 'unchanged') {
+        continue;
+      }
+
+      const fileExtension = path.extname(file.filename);
+      if (!extensions.has(fileExtension)) {
         continue;
       }
 

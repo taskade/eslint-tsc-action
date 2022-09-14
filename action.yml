@@ -8,6 +8,10 @@ inputs:
     description: 'GitHub token'
     required: true
     default: ${{ github.token }}
+  extensions:
+    description: 'File extensions to lint, comma-separated. Includes the period.'
+    required: false
+    default: '.js,.jsx,.ts,.tsx'
 runs:
   using: 'node12'
   main: 'lib/index.js'
