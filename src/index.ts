@@ -77,67 +77,74 @@ async function run() {
 
   // Run ESLint and TSC
 
-  const annotations: Annotation[] = [];
-
-  annotations.push(...(await eslint(filesToLint)));
-  console.log('Completed ESLint');
-  annotations.push(...(await tsc(filesToLint)));
-  console.log('Completed TSC');
+  let annotationCount = 0;
 
   const checkName = core.getInput('check_name') || 'ESLint TSC Action';
   let checkId: number | null = null;
 
-  if (checkName.length > 0) {
-    const checks = await octokit.rest.checks.listForRef({
-      owner,
-      repo,
-      status: 'in_progress',
-      check_name: checkName,
-      ref: sha,
-    });
+  async function submitAnnotations(annotations: Annotation[]) {
+    if (checkName.length > 0) {
+      const checks = await octokit.rest.checks.listForRef({
+        owner,
+        repo,
+        status: 'in_progress',
+        check_name: checkName,
+        ref: sha,
+      });
 
-    if (checks.data.check_runs.length > 0) {
-      checkId = checks.data.check_runs[0].id;
+      if (checks.data.check_runs.length > 0) {
+        checkId = checks.data.check_runs[0].id;
+      }
+    }
+
+    if (checkId == null) {
+      const createdCheck = await octokit.rest.checks.create({
+        owner,
+        repo,
+        name: checkName,
+        head_sha: sha,
+        status: 'in_progress',
+        started_at: new Date().toISOString(),
+      });
+
+      checkId = createdCheck.data.id;
+    } else {
+      // Mark existing check run as in progress
+      await octokit.rest.checks.update({
+        owner,
+        repo,
+        check_run_id: checkId,
+        status: 'in_progress',
+        started_at: new Date().toISOString(),
+      });
+    }
+
+    console.log(`Processing ${annotations.length} annotations for SHA ${sha}`);
+
+    for (const annotationsChunk of chunk(annotations, 50)) {
+      await octokit.rest.checks.update({
+        owner,
+        repo,
+        check_run_id: checkId,
+        status: 'in_progress',
+        output: {
+          title: `Found ${annotationCount} annotations`,
+          summary: `Found ${annotationCount} annotations`,
+          annotations: annotationsChunk,
+        },
+      });
     }
   }
 
-  if (checkId == null) {
-    const createdCheck = await octokit.rest.checks.create({
-      owner,
-      repo,
-      name: checkName,
-      head_sha: sha,
-      status: 'in_progress',
-      started_at: new Date().toISOString(),
-    });
+  const eslintAnnotations = await eslint(filesToLint);
+  console.log('Completed ESLint');
+  annotationCount += eslintAnnotations.length;
+  await submitAnnotations(eslintAnnotations);
 
-    checkId = createdCheck.data.id;
-  } else {
-    // Mark existing check run as in progress
-    await octokit.rest.checks.update({
-      owner,
-      repo,
-      check_run_id: checkId,
-      status: 'in_progress',
-      started_at: new Date().toISOString(),
-    });
-  }
-
-  console.log(`Processing ${annotations.length} annotations for SHA ${sha}`);
-
-  for (const annotationsChunk of chunk(annotations, 50)) {
-    await octokit.rest.checks.update({
-      owner,
-      repo,
-      check_run_id: checkId,
-      status: 'in_progress',
-      output: {
-        title: `Found ${annotations.length} annotations`,
-        summary: `Found ${annotations.length} annotations`,
-        annotations: annotationsChunk,
-      },
-    });
-  }
+  const tscAnnotations = await tsc(filesToLint);
+  console.log('Completed TSC');
+  annotationCount += tscAnnotations.length;
+  await submitAnnotations(tscAnnotations);
 
   // Mark check run as completed
   await octokit.rest.checks.update({
