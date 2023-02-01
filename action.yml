@@ -13,5 +13,5 @@ inputs:
     required: false
     default: '.js,.jsx,.ts,.tsx'
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'lib/index.js'
