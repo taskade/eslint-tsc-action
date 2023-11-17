@@ -41,15 +41,7 @@ async function run() {
   annotations.push(...(await tsc(filesToLint)));
   console.log('Completed TSC');
 
-  console.log(
-    annotations.map((annotation) => {
-      return {
-        message: annotation.message,
-        path: annotation.path,
-        title: annotation.title,
-      };
-    })
-  );
+  console.log(annotations);
 }
 
 run().catch((error) => {
