@@ -34,6 +34,7 @@ export default async function tsc(
   });
 
   project.addSourceFilesAtPaths(rootNames);
+  project.addSourceFilesAtPaths(['**/*.d.ts', '!node_modules/**/*.d.ts']);
   project.resolveSourceFileDependencies();
 
   console.log('[TSC] resolved file dependencies');
