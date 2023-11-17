@@ -25,7 +25,6 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc",
-    "package": "ncc build dist/index.js -o lib -e typescript"
+    "package": "ncc build src/index.ts -o lib -e typescript"
   }
 }
